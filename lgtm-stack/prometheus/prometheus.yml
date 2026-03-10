@@ -1,0 +1,35 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
+scrape_configs:
+  - job_name: 'hcm-webui-dev'
+    static_configs:
+      - targets: ['YOUR_DEV_SERVER_IP:YOUR_DEV_PORT']
+        labels:
+          environment: 'development'
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  - job_name: 'hcm-webui-prod'
+    static_configs:
+      - targets: ['YOUR_PROD_SERVER_IP:YOUR_PROD_PORT']
+        labels:
+          environment: 'production'
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['loki:3100']
+
+  - job_name: 'tempo'
+    static_configs:
+      - targets: ['tempo:3200']

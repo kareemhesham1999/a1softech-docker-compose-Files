@@ -1,0 +1,103 @@
+# =============================================================================
+# HCM Observability Stack (LGTM)
+# =============================================================================
+# Deploy via Portainer: Stacks > Add Stack > Repository
+# Set Compose path to: observability/docker-compose.yml
+#
+# IMPORTANT: Before deploying, on your Ubuntu server run:
+#   sudo rm -rf /data/compose/*/lgtm-stack  (clears stale directory mounts)
+#
+# Access Points:
+#   Grafana:    http://SERVER_IP:3000  (admin/admin)
+#   Prometheus: http://SERVER_IP:9090
+# =============================================================================
+
+services:
+  # ==========================================
+  # Grafana — Dashboards & Alerts
+  # ==========================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: hcm-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./grafana/grafana.env
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+    networks:
+      - observability
+
+  # ==========================================
+  # Prometheus — Metrics
+  # ==========================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: hcm-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=90d'
+      - '--web.enable-remote-write-receiver'
+      - '--enable-feature=exemplar-storage'
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus-data:/prometheus
+    networks:
+      - observability
+
+  # ==========================================
+  # Loki — Log Aggregation
+  # ==========================================
+  loki:
+    image: grafana/loki:latest
+    container_name: hcm-loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/loki.yml
+    volumes:
+      - ./loki/loki.yml:/etc/loki/loki.yml:ro
+      - loki-data:/loki
+    networks:
+      - observability
+
+  # ==========================================
+  # Tempo — Distributed Tracing
+  # ==========================================
+  tempo:
+    image: grafana/tempo:latest
+    container_name: hcm-tempo
+    restart: unless-stopped
+    ports:
+      - "3200:3200"
+      - "4317:4317"
+      - "4318:4318"
+    command: [ "-config.file=/etc/tempo/tempo.yml" ]
+    volumes:
+      - ./tempo/tempo.yml:/etc/tempo/tempo.yml:ro
+      - tempo-data:/var/tempo
+    depends_on:
+      - prometheus
+    networks:
+      - observability
+
+volumes:
+  grafana-data:
+  prometheus-data:
+  loki-data:
+  tempo-data:
+
+networks:
+  observability:
+    driver: bridge
