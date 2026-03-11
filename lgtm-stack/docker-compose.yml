@@ -9,7 +9,7 @@ services:
       - "3000:3000"
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./lgtm-stack/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
 
   prometheus:
     image: prom/prometheus:latest
@@ -21,7 +21,7 @@ services:
       - '--enable-feature=otlp-write-receiver'
     volumes:
       - prometheus-data:/prometheus
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./lgtm-stack/prometheus.yml:/etc/prometheus/prometheus.yml
 
   loki:
     image: grafana/loki:latest
@@ -30,7 +30,7 @@ services:
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
       - loki-data:/loki
-      - ./loki-config.yaml:/etc/loki/local-config.yaml
+      - ./lgtm-stack/loki-config.yaml:/etc/loki/local-config.yaml
 
   tempo:
     image: grafana/tempo:latest
@@ -39,7 +39,7 @@ services:
     command: -config.file=/etc/tempo.yaml
     volumes:
       - tempo-data:/var/tempo
-      - ./tempo-config.yaml:/etc/tempo.yaml
+      - ./lgtm-stack/tempo-config.yaml:/etc/tempo.yaml
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
@@ -50,7 +50,7 @@ services:
       - "4317:4317" 
       - "4318:4318" 
     volumes:
-      - ./otel-collector-config.yaml:/etc/otel/config.yaml
+      - ./lgtm-stack/otel-collector-config.yaml:/etc/otel/config.yaml
     depends_on:
       - tempo
       - prometheus
