@@ -1,4 +1,4 @@
-auth_enabled: false
+﻿auth_enabled: false
 
 server:
   http_listen_port: 3100
@@ -24,18 +24,3 @@ schema_config:
       index:
         prefix: index_
         period: 24h
-
-limits_config:
-  retention_period: 30d
-  max_query_length: 0h
-  max_query_series: 5000
-  max_entries_limit_per_query: 5000
-
-compactor:
-  working_directory: /loki/compactor
-  compaction_interval: 10m
-  retention_enabled: true
-  retention_delete_delay: 2h
-
-analytics:
-  reporting_enabled: false
